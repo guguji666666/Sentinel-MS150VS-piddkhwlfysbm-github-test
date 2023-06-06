@@ -1,0 +1,78 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "tenant_id": {
+            "defaultValue": "b9203262-d7bb-4e74-86ea-4b3e913c7b5d",
+            "type": "String"
+        },
+        "workspace_id": {
+            "defaultValue": "b2766a3e-4eda-489f-9b9f-95e7381dfc24",
+            "type": "String"
+        },
+        "workspace_name": {
+            "defaultValue": "asclab-la-piddkhwlfysbm",
+            "type": "String"
+        },
+        "subscription_id": {
+            "defaultValue": "74a72629-ac6d-44db-a66a-abc69f3bfb7e",
+            "type": "String"
+        },
+        "resource_group_name": {
+            "defaultValue": "gjs-ms150-mdfc1",
+            "type": "String"
+        },
+        "workflows_incident_mail_name": {
+            "defaultValue": "incident-mail",
+            "type": "String"
+        },
+        "automation_rule_name": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the automation rule that will be deployed"
+            },
+	    "defaultValue": "gjs-new-incident-notify"
+        }
+    },
+    "resources": [
+        {
+            //"id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace_id'), 'Microsoft.SecurityInsights'),'/automationRules/85f2eac9-43f1-480e-b8ad-473375c195c0')]",
+            //"name": "[concat(parameters('workspace_id'),'/Microsoft.SecurityInsights/85f2eac9-43f1-480e-b8ad-473375c195c0')]",
+            "name": "[concat(parameters('workspace_name'),'/Microsoft.SecurityInsights/', parameters('automation_rule_name'))]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/automationRules",
+            "kind": "Scheduled",
+            "apiVersion": "2019-01-01-preview",
+            "metadata": {
+                "title": "Trigger message logic app when new incident created", 
+                "description": "For each created incident pull up the logic app that sends the message",
+                "prerequisites": "",
+                "entities": [""], 
+                "tags": ["Slack", "SOAR"], 
+                "author": {
+                    "name": "Jiasheng Gu"
+                }
+            },
+            "properties": {
+                "displayName": "[parameters('automation_rule_name')]",
+                "order": 1,
+                "triggeringLogic": {
+                    "isEnabled": true,
+                    "expirationTimeUtc": null,
+                    "triggersOn": "Incidents",
+                    "triggersWhen": "Created",
+                    "conditions": []
+                },
+                "actions": [
+                    {
+                        "order": 1,
+                        "actionType": "RunPlaybook",
+                        "actionConfiguration": {
+                            "logicAppResourceId": "[concat('/subscriptions/', parameters('subscription_id'), '/resourceGroups/', parameters('resource_group_name'), '/providers/Microsoft.Logic/workflows/', parameters('workflows_incident_mail_name'))]",
+                            "tenantId": "[parameters('tenant_id')]"
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}
